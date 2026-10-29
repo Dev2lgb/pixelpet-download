@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PixelPet: 화면 테두리를 걸어다니는 픽셀 다마고치</title>
+<meta name="description" content="바탕화면 가장자리를 걸어다니는 작은 픽셀 펫. 밥 주고, 똥 치우고, 씻기고, 재우면 며칠에 걸쳐 어른으로 자라요. 윈도우와 맥에서 무료.">
+<meta property="og:title" content="PixelPet: 화면 테두리를 걸어다니는 픽셀 다마고치">
+<meta property="og:description" content="바탕화면 가장자리를 걸어다니는 작은 픽셀 펫. 윈도우와 맥에서 무료.">
+<meta property="og:image" content="https://dev2lgb.github.io/pixelpet-download/og.png">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#000000">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="top">
+  <a class="brand" href="#"><canvas class="brand-pet" aria-hidden="true"></canvas>PixelPet</a>
+  <nav class="top-nav" aria-label="바로가기">
+    <a href="#friends">친구들</a>
+    <a href="#care">돌보기</a>
+    <a href="#install">설치</a>
+  </nav>
+</header>
+
+<main>
+  <section class="hero">
+    <canvas class="parade" id="parade-a" aria-hidden="true"></canvas>
+    <div class="mark-wrap">
+      <h1 class="sr">PixelPet</h1>
+      <canvas id="mark" role="img" aria-label="PIXELPET 글자 위를 걸어다니는 펫"></canvas>
+    </div>
+    <canvas class="parade" id="parade-b" aria-hidden="true"></canvas>
+    <div class="hero-row">
+      <div class="hero-copy">
+        <p class="hero-sub">화면 테두리를 걸어다니는<br>픽셀 다마고치</p>
+        <p class="hero-lead">켜두기만 하면 바탕화면 가장자리를 따라 걷고, 벽을 타고, 아무 데나 똥을 싸요. 밥 주고 씻기고 재워주면 며칠에 걸쳐 어른으로 자라요.</p>
+      </div>
+      <div class="dl" id="download">
+        <a class="pbtn pink" id="dl-win" href="https://github.com/Dev2lgb/pixelpet-download/releases/latest">
+          <span class="pbtn-main">윈도우용 받기</span>
+          <span class="pbtn-sub" id="dl-win-sub">Windows 10, 11</span>
+        </a>
+        <a class="pbtn line" id="dl-mac" href="https://github.com/Dev2lgb/pixelpet-download/releases/latest">
+          <span class="pbtn-main">맥용 받기</span>
+          <span class="pbtn-sub" id="dl-mac-sub">macOS (인텔, 애플 실리콘)</span>
+        </a>
+        <a class="pbtn line hidden" id="dl-store" href="#">
+          <span class="pbtn-main">Microsoft Store</span>
+          <span class="pbtn-sub">스토어에서 설치</span>
+        </a>
+        <p class="hero-note">무료예요. 회원가입도 광고도 없어요.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec life">
+    <div class="life-grid">
+      <div>
+        <h2>바탕화면에서 살아요</h2>
+        <p class="lead">창 테두리 말고 화면 테두리가 이 친구의 집이에요. 펫이 없는 곳은 그대로 클릭돼서 게임이나 작업을 방해하지 않아요.</p>
+        <ul class="facts">
+          <li><b>바닥을 걷고</b><span>어린이가 되면 벽을 타고 천장에 매달려요</span></li>
+          <li><b>끌어서 들면</b><span>데롱데롱 매달렸다가 놓으면 툭 떨어져요</span></li>
+          <li><b>아무 데나</b><span>똥이랑 오줌을 싸요. 클릭하면 치워져요</span></li>
+        </ul>
+      </div>
+      <figure class="monitor"><canvas id="monitor" role="img" aria-label="모니터 바닥을 걷고, 벽을 타고, 천장에 매달린 픽셀 펫들"></canvas></figure>
+    </div>
+  </section>
+
+  <section class="sec" id="friends">
+    <div class="sec-head">
+      <h2>똑같은 친구는 없어요</h2>
+      <p class="lead">귀, 머리, 눈, 입, 몸통, 발. 여섯 부위가 각각 여덟 가지 중에서 랜덤으로 골라지고 색도 제각각이에요. 번호 여섯 자리가 곧 부위 조합이에요.</p>
+    </div>
+    <div class="look" id="gacha" role="list"></div>
+    <div class="look-foot">
+      <p class="count">조합 262,144가지, 거기에 색깔까지</p>
+      <button class="pbtn line small" id="reroll" type="button"><span class="pbtn-main">다시 뽑기</span></button>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head">
+      <h2>알에서 어른까지</h2>
+      <p class="lead">잘 돌본 시간만큼 자라요. 아래 시간은 다음 단계까지 걸리는 시간이에요. 배가 고프거나 아프면 느려지고, 앱을 꺼둔 동안에도 조금씩 자라요.</p>
+    </div>
+    <ol class="evo" id="evo"></ol>
+  </section>
+
+  <section class="sec" id="care">
+    <div class="sec-head">
+      <h2>돌봐줘야 해요</h2>
+      <p class="lead">배고프면 밥, 똥을 싸면 치우기, 꼬질꼬질하면 목욕, 졸려하면 재우기. 똥을 오래 두거나 굶기면 병에 걸려요.</p>
+    </div>
+    <div class="tiles" id="care-tiles"></div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head">
+      <h2>청소년이 되면 알바도 해요</h2>
+      <p class="lead">켜두기만 하면 알아서 일하고 돈을 벌어와요. 대신 배가 빨리 고프고 금방 지쳐요. 번 돈으로 간식이나 모자를 사줄 수 있어요.</p>
+    </div>
+    <div class="tiles three" id="job-tiles"></div>
+    <h3 class="sub-h">상점 모자</h3>
+    <ul class="hats" id="hats"></ul>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head">
+      <h2>말 대신 몸짓으로</h2>
+      <p class="lead">말은 한마디도 안 해요. 기분이 좋으면 깡총거리고, 심심하면 데굴데굴 구르고, 나비가 날아오면 쫓아가요. 마우스를 올려보세요.</p>
+    </div>
+    <ul class="moves" id="moves"></ul>
+    <h3 class="sub-h">머리 위에 이런 그림이 뜨면</h3>
+    <ul class="emotes" id="emotes"></ul>
+  </section>
+
+  <section class="sec" id="install">
+    <div class="sec-head"><h2>설치하기</h2></div>
+    <div class="install">
+      <div class="os">
+        <h3>윈도우</h3>
+        <ol class="steps">
+          <li>위에서 <b>윈도우용 받기</b>를 눌러 설치 파일을 받아요.</li>
+          <li>받은 파일을 실행해요. <b>Windows의 PC 보호</b> 창이 뜨면 <b>추가 정보</b>를 누르고 <b>실행</b>을 눌러요.</li>
+          <li>화면 아래로 알이 떨어지면 끝이에요. 1분 뒤에 깨어나요.</li>
+        </ol>
+        <p class="os-note">설치하기 싫으면 <a id="dl-portable" href="https://github.com/Dev2lgb/pixelpet-download/releases/latest">설치 없이 실행하는 버전</a>도 있어요.</p>
+      </div>
+      <div class="os">
+        <h3>맥</h3>
+        <ol class="steps">
+          <li>위에서 <b>맥용 받기</b>를 눌러 dmg 파일을 받아요.</li>
+          <li>dmg를 열고 PixelPet을 <b>응용 프로그램</b> 폴더로 끌어다 놓아요.</li>
+          <li>실행하면 화면 아래로 알이 떨어져요. 메뉴는 화면 위쪽 메뉴바 아이콘에 있어요.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head"><h2>궁금한 점</h2></div>
+    <div class="faq">
+      <details>
+        <summary>컴퓨터를 껐다 켜도 이어서 키울 수 있어요?</summary>
+        <p>네. 자동으로 저장돼서 다시 켜면 그대로 이어져요. 꺼둔 동안 시간이 흐른 만큼 배도 고파지고, 알바 중이었다면 돈도 벌어 와요.</p>
+      </details>
+      <details>
+        <summary>게임하거나 일할 때 방해되지 않아요?</summary>
+        <p>펫이 없는 곳을 클릭하면 그대로 아래 창이 눌려요. 펫이 거슬리면 트레이 아이콘에서 잠깐 숨기거나 크기를 줄일 수 있어요.</p>
+      </details>
+      <details>
+        <summary>펫이 안 보여요.</summary>
+        <p>트레이(맥은 메뉴바)의 펫 아이콘을 누르고 <b>펫 부르기</b>를 고르면 마우스 근처로 떨어져요.</p>
+      </details>
+      <details>
+        <summary>깜빡하고 방치하면 어떻게 돼요?</summary>
+        <p>컴퓨터를 안 쓰는 동안에는 천천히 배가 고파져서 잠깐 자리를 비워도 괜찮아요. 오래오래 돌보지 않으면 별나라로 떠나고 새 알이 찾아와요. 모아둔 돈과 모자는 남아요.</p>
+      </details>
+      <details>
+        <summary>정말 무료예요?</summary>
+        <p>네, 무료예요. 인터넷에 연결하지 않고, 어떤 정보도 모으지 않아요. 자세한 내용은 <a href="privacy.html">개인정보 처리방침</a>에 있어요.</p>
+      </details>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <p>PixelPet <span id="ver">1.1.0</span></p>
+  <p>글꼴: <a href="https://github.com/quiple/galmuri">갈무리</a> (SIL Open Font License 1.1)</p>
+  <p><a href="https://github.com/Dev2lgb/pixelpet-download/releases">모든 버전 보기</a></p>
+  <p><a href="privacy.html">개인정보 처리방침</a></p>
+</footer>
+
+<!-- 화면 맨 아래를 걸어다니는 펫 -->
+<div class="walker">
+  <canvas id="walk-cv" aria-hidden="true"></canvas>
+  <button class="walk-hit" id="walk-hit" type="button" aria-label="펫 메뉴 열기" aria-expanded="false" aria-controls="pet-menu"></button>
+  <div class="poops" id="poops"></div>
+</div>
+<div class="pet-menu hidden" id="pet-menu" role="dialog" aria-label="펫 돌보기">
+  <div class="pm-head"><b id="pm-name"></b><span class="badge" id="pm-stage"></span></div>
+  <div class="pm-stats" id="pm-stats"></div>
+  <div class="pm-grid">
+    <button type="button" data-act="eat"><canvas data-icon="meal"></canvas>밥</button>
+    <button type="button" data-act="pet"><canvas data-icon="pet"></canvas>쓰다듬기</button>
+    <button type="button" data-act="bath"><canvas data-icon="bath"></canvas>씻기기</button>
+    <button type="button" data-act="sleep" id="pm-sleep"><canvas data-icon="sleep"></canvas>재우기</button>
+    <button type="button" data-act="swap" class="wide"><canvas data-icon="egg"></canvas>다른 친구 부르기</button>
+  </div>
+</div>
+<canvas id="cursor-fx" aria-hidden="true"></canvas>
+
+<script src="pets.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
