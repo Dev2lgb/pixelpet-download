@@ -62,8 +62,10 @@ b { font-weight: 700; color: #fff; }
 }
 .hero-sub { margin: 0; font-family: var(--pixel); font-weight: 700; font-size: 22px; line-height: 1.5; color: #fff; }
 .hero-lead { margin: 12px 0 0; max-width: 32em; color: var(--mute); }
-.dl { display: flex; flex-wrap: wrap; gap: 16px 20px; justify-content: flex-end; align-items: center; padding: var(--px); }
-.hero-note { flex-basis: 100%; margin: 4px 0 0; font-size: 13px; color: var(--mute); text-align: right; }
+/* 윈도우·맥 버튼 두 칸, 안내 문구는 그 아래 한 줄 */
+.dl { display: grid; grid-template-columns: auto auto; gap: 16px 20px; justify-content: end; padding: var(--px); }
+.hero-note { grid-column: 1 / -1; }
+.hero-note { margin: 4px 0 0; font-size: 13px; color: var(--mute); text-align: right; }
 
 /* 픽셀 버튼: 모서리가 한 칸 깎인 테두리 */
 .pbtn {
@@ -216,7 +218,7 @@ h2 { margin: 0; font-family: var(--pixel); font-weight: 700; font-size: 44px; li
 /* ───── 좁은 화면 ───── */
 @media (max-width: 960px) {
   .hero-row { grid-template-columns: 1fr; }
-  .dl { justify-content: flex-start; }
+  .dl { justify-content: start; }
   .hero-note { text-align: left; }
   .life-grid { grid-template-columns: 1fr; }
   .look { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -231,6 +233,7 @@ h2 { margin: 0; font-family: var(--pixel); font-weight: 700; font-size: 44px; li
   .mark-wrap, .hero-row { padding: 0 16px; }
   .hero-sub { font-size: 18px; }
   .pbtn { min-width: 0; width: 100%; }
+  .dl { grid-template-columns: 1fr; }
   .sec { padding: 72px 16px 0; }
   h2 { font-size: 30px; }
   .look { grid-template-columns: repeat(2, minmax(0, 1fr)); }

@@ -4,7 +4,6 @@
   const DATA = window.PETDATA;
   const FIX = DATA.fixed;
   const REPO = 'Dev2lgb/pixelpet-download';
-  const STORE_URL = ''; // 마이크로소프트 스토어에 올라가면 여기에 주소를 넣으면 버튼이 나타나요
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const finePointer = window.matchMedia('(pointer: fine)').matches;
   const $ = (s, el) => (el || document).querySelector(s);
@@ -948,9 +947,8 @@
     return { resize };
   })();
 
-  // ───────── 다운로드 링크 (GitHub 릴리스에서 자동으로) ─────────
-  // 파일마다 그 파일이 있는 가장 최신 릴리스를 씀 (맥 파일이 아직 안 올라온 새 버전이면 이전 버전 맥 파일로)
-  if (STORE_URL) { const s = $('#dl-store'); s.href = STORE_URL; s.classList.remove('hidden'); }
+  // ───────── 맥 다운로드 링크 (GitHub 릴리스에서 자동으로. 윈도우는 index.html 의 Microsoft Store 링크) ─────────
+  // dmg 가 있는 가장 최신 릴리스를 씀 (맥 파일이 아직 안 올라온 새 버전이면 이전 버전 맥 파일로)
   const mb = (n) => Math.round(n / 1024 / 1024) + 'MB';
   fetch(`https://api.github.com/repos/${REPO}/releases?per_page=10`)
     .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
@@ -961,14 +959,8 @@
         for (const r of rels) { const a = (r.assets || []).find((x) => re.test(x.name)); if (a) return { a, ver: tag(r) }; }
         return null;
       };
-      const win = pick(/setup\.exe$/i), port = pick(/portable\.exe$/i), mac = pick(/\.dmg$/i);
+      const mac = pick(/\.dmg$/i);
       if (rels[0] && tag(rels[0])) $('#ver').textContent = tag(rels[0]);
-      if (win) {
-        $('#dl-win').href = win.a.browser_download_url;
-        $('#dl-win-ver').textContent = 'v' + win.ver;
-        $('#dl-win-sub').textContent = `Windows 10, 11 (${mb(win.a.size)})`;
-      }
-      if (port) $('#dl-portable').href = port.a.browser_download_url;
       const m = $('#dl-mac');
       if (mac) {
         m.href = mac.a.browser_download_url;
