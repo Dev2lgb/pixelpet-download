@@ -22,7 +22,7 @@
   // ───────── 픽셀 그림 그리기 ─────────
   const cache = new Map();
   function frameCanvas(fr, pal) {
-    const key = fr[2] + '|' + (pal ? pal.B + pal.O : '');
+    const key = fr[2] + '|' + (pal ? (pal.B || '') + (pal.O || '') + (pal.R || '') + (pal.r || '') : '');
     let c = cache.get(key);
     if (c) return c;
     const [w, h, s] = fr;
@@ -617,6 +617,419 @@
     tiles.forEach((tl) => io.observe(tl.cv));
   }
 
+  // ───────── 펫 하우스: 집 안 단면 + 꾸미기 견본 ─────────
+  // 벽지·바닥 무늬는 앱과 같음 (g: 캔버스, z: 무늬 한 칸 크기)
+  const WALL_HEART = ['.X.X.', 'XXXXX', '.XXX.', '..X..'];
+  function paintWall(g, kind, x0, y0, w, h, z) {
+    const R = (x, y, ww, hh) => g.fillRect(Math.round(x0 + x * z), Math.round(y0 + y * z), Math.max(1, Math.round(ww * z)), Math.max(1, Math.round(hh * z)));
+    const cols = Math.ceil(w / z), rows = Math.ceil(h / z);
+    g.save();
+    g.beginPath(); g.rect(x0, y0, w, h); g.clip();
+    switch (kind) {
+      case 'dots':
+        g.fillStyle = '#dff1fb'; g.fillRect(x0, y0, w, h);
+        g.fillStyle = '#b9e0f6';
+        for (let y = 4, r = 0; y < rows; y += 12, r++) for (let x = (r % 2) * 8 + 4; x < cols; x += 16) R(x, y, 3, 3);
+        break;
+      case 'check':
+        g.fillStyle = '#e3f6ec'; g.fillRect(x0, y0, w, h);
+        g.fillStyle = '#cbecd9';
+        for (let y = 0, r = 0; y < rows; y += 10, r++) for (let x = (r % 2) * 10; x < cols; x += 20) R(x, y, 10, 10);
+        break;
+      case 'heart':
+        g.fillStyle = '#ffe6ee'; g.fillRect(x0, y0, w, h);
+        g.fillStyle = '#ffc2d4';
+        for (let y = 5, r = 0; y < rows; y += 16, r++) for (let x = (r % 2) * 12 + 4; x < cols; x += 24) WALL_HEART.forEach((row, dy) => { for (let dx = 0; dx < row.length; dx++) if (row[dx] === 'X') R(x + dx, y + dy, 1, 1); });
+        break;
+      case 'wood':
+        g.fillStyle = '#e9c49a'; g.fillRect(x0, y0, w, h);
+        g.fillStyle = '#d4a676';
+        for (let x = 0; x < cols; x += 14) R(x, 0, 1, rows);
+        for (let x = 6, r = 0; x < cols; x += 14, r++) for (let y = (r * 37) % 50 + 10; y < rows; y += 50) R(x, y, 2, 1);
+        break;
+      case 'night':
+        g.fillStyle = '#26305a'; g.fillRect(x0, y0, w, h);
+        for (let i = 0; i < cols * rows / 160; i++) {
+          const hx = (i * 977) % cols, hy = (i * 613 + (i >> 3) * 31) % rows;
+          g.fillStyle = i % 5 === 0 ? '#ffd23f' : '#c9d4ff';
+          R(hx, hy, 1, 1);
+        }
+        break;
+      default: // stripe
+        g.fillStyle = '#fde9d9'; g.fillRect(x0, y0, w, h);
+        g.fillStyle = '#f6d8c6';
+        for (let x = 0; x < cols; x += 16) R(x, 0, 6, rows);
+    }
+    g.restore();
+  }
+  function paintFloor(g, kind, x0, y0, w, h, z) {
+    const R = (x, y, ww, hh) => g.fillRect(Math.round(x0 + x * z), Math.round(y0 + y * z), Math.max(1, Math.round(ww * z)), Math.max(1, Math.round(hh * z)));
+    const cols = Math.ceil(w / z), rows = Math.ceil(h / z), half = rows / 2;
+    g.save();
+    g.beginPath(); g.rect(x0, y0, w, h); g.clip();
+    switch (kind) {
+      case 'tile':
+        g.fillStyle = '#f4f4f6'; g.fillRect(x0, y0, w, h);
+        g.fillStyle = '#c9d3df';
+        for (let y = 0, r = 0; y < rows; y += 6, r++) for (let x = (r % 2) * 6; x < cols; x += 12) R(x, y, 6, 6);
+        break;
+      case 'carpet':
+        g.fillStyle = '#f5a3c0'; g.fillRect(x0, y0, w, h);
+        g.fillStyle = '#fbc6d8';
+        for (let y = 1, r = 0; y < rows; y += 3, r++) for (let x = (r % 2) * 2; x < cols; x += 4) R(x, y, 1, 1);
+        break;
+      case 'grass':
+        g.fillStyle = '#7fc75a'; g.fillRect(x0, y0, w, h);
+        g.fillStyle = '#5fae43';
+        for (let x = 0; x < cols; x += 3) R(x, ((x * 7) % 3), 1, 2 + (x % 2));
+        g.fillStyle = '#9ad97a';
+        for (let x = 1; x < cols; x += 5) R(x, half + ((x * 3) % 2), 1, 1);
+        break;
+      case 'marble':
+        g.fillStyle = '#eceff3'; g.fillRect(x0, y0, w, h);
+        g.fillStyle = '#cfd6df';
+        for (let x = 0; x < cols; x += 22) { R(x, 0, 1, rows); for (let i = 0; i < 6; i++) R(x + 4 + i * 2, (i % 3) + 2, 2, 1); }
+        break;
+      default: // wood
+        g.fillStyle = '#c98a55'; g.fillRect(x0, y0, w, h);
+        g.fillStyle = '#b47344';
+        for (let x = 0, k = 0; x < cols; x += 24, k++) R(x + (k % 2) * 12, half, 2, half + 1);
+        for (let x = 12; x < cols; x += 24) R(x, 0, 2, half);
+        g.fillStyle = '#8a5530';
+        R(0, half, cols, 1);
+    }
+    g.fillStyle = 'rgba(0,0,0,0.22)';
+    g.fillRect(x0, y0, w, Math.max(1, Math.round(z)));
+    g.restore();
+  }
+
+  const house = (function () {
+    const cv = $('#house');
+    const HS = DATA.housing;
+    const OUT = FIX.O;
+    // 그림 픽셀 단위. 방 높이 50 + 바닥 띠 6 = 계단 9칸(56) 높이
+    const AW = 208, AH = 156, GROUND = 151, ROOM = 50, BAND = 6, WALL = 3, SPEED = 16;
+    const WIDTH = [0, 110, 148, 148, 190];
+    // 층마다 가구: [그림, 방 왼쪽에서 가운데까지, 벽에 거는지]
+    const LAYOUT = {
+      1: [[['window', 36, 1], ['toilet', 13], ['feeder', 36], ['bed', 76], ['plant2', 101]]],
+      2: [[['window', 42, 1], ['frame', 110, 1], ['toilet', 13], ['bathtub', 42], ['feeder', 70], ['bed', 110], ['plant2', 138]]],
+      3: [[['window', 42, 1], ['toilet', 13], ['bathtub', 42], ['feeder', 70], ['stairs9', 119]],
+        [['frame', 26, 1], ['window', 80, 1], ['rug', 80], ['bed', 26], ['sofa', 80], ['plant2', 113]]],
+      4: [[['window', 50, 1], ['clock', 112, 1], ['toilet', 13], ['bathtub', 42], ['feeder', 70], ['medkit', 90], ['stairs9', 161]],
+        [['frame', 26, 1], ['window', 70, 1], ['rug', 100], ['bed', 26], ['plant2', 56], ['sofa', 100], ['tv', 141]]],
+    };
+    const USE = { toilet: 2.8, feeder: 3.2, bathtub: 4.6, bed: 9, sofa: 6 };
+    const LIFT = { toilet: 8, bathtub: 2, bed: 7, sofa: 8 };
+    const st = { level: 4, wall: 'stripe', floor: 'wood', roof: 'red' };
+    const heroes = shuffle(DATA.heroes).slice(0, 3);
+    const stars = Array.from({ length: 14 }, (_, i) => ({ x: (i * 53 + 11) % AW, y: 4 + ((i * 29) % 70), ph: i * 0.7 }));
+    const bg = document.createElement('canvas');
+    let ctx = cv.getContext('2d'), P = 1, t = 0, visible = true;
+    let geo, items = [], stairs = null, pets = [], fx = [];
+
+    function makeGeo() {
+      const rw = WIDTH[st.level], floors = st.level >= 3 ? 2 : 1;
+      const hw = rw + WALL * 2, x0 = Math.round((AW - hw) / 2);
+      const fl = [];
+      for (let i = 0; i < floors; i++) { const y = GROUND - BAND - i * (ROOM + BAND); fl.push({ top: y - ROOM, y }); }
+      geo = { rw, floors, hw, x0, rx: x0 + WALL, fl, bodyTop: fl[floors - 1].top - WALL };
+      items = [];
+      LAYOUT[st.level].forEach((list, f) => list.forEach(([name, x, wall]) => {
+        const fr = DATA.props[name];
+        items.push({ name, x, f, wall: !!wall, w: fr[0], h: fr[1], busy: null });
+      }));
+      stairs = items.find((it) => it.name === 'stairs9') || null;
+      if (stairs) {
+        stairs.left = stairs.x - stairs.w / 2;
+        stairs.xa = stairs.left - 3; // 첫 칸 앞
+        stairs.xb = stairs.left + stairs.w - 4; // 꼭대기 (2층 바닥)
+      }
+    }
+    const find = (name) => items.find((it) => it.name === name);
+    // 계단 위에서 1층 바닥보다 얼마나 높은지 (한 칸 6픽셀)
+    const stairUp = (x) => { const i = Math.floor((x - stairs.left - 1) / 6); return i < 0 ? 0 : Math.min(9, i + 1) * 6 + 2; };
+    const feetY = (p) => (p.climb ? geo.fl[0].y - stairUp(p.x) : geo.fl[p.f].y);
+    const spot = (it) => (it.name === 'feeder' ? it.x + 13 : it.name === 'toilet' ? it.x + 2 : it.x);
+    const addFx = (kind, x, y, o) => fx.push(Object.assign({ kind, x, y, vx: rand(-4, 4), vy: -12, t: 0, life: 1.3 }, o || {}));
+
+    function setAct(p, type, dur, o) { p.a = Object.assign({ type, t: 0, dur }, o || {}); }
+    function startUse(p, it) { p.x = spot(it); setAct(p, 'use', it.name === 'bed' ? rand(7, 11) : USE[it.name], { it }); }
+    // 가구 쓰러 가기: 다른 층이면 계단으로
+    function goUse(p, it) {
+      if (!it || it.busy) return false;
+      it.busy = p;
+      p.q = [];
+      if (it.f !== p.f && stairs) {
+        if (p.f === 0) p.q.push({ type: 'walk', x: stairs.xa }, { type: 'climb', up: true });
+        else p.q.push({ type: 'walk', x: stairs.xb }, { type: 'climb', up: false });
+      }
+      p.q.push({ type: 'walk', x: spot(it) }, { type: 'use', it });
+      next(p);
+      return true;
+    }
+    function next(p) {
+      const s = p.q.shift();
+      if (!s) return plan(p);
+      if (s.type === 'walk') setAct(p, 'walk', Infinity, { tx: clamp(s.x, 10, geo.rw - 10) });
+      else if (s.type === 'climb') setAct(p, 'climb', Infinity, { up: s.up });
+      else startUse(p, s.it);
+    }
+    function plan(p) {
+      const r0 = Math.random();
+      if (r0 < 0.45) {
+        const free = items.filter((it) => USE[it.name] && !it.busy);
+        if (free.length && goUse(p, pick(free))) return;
+      }
+      if (r0 < 0.75) { p.q = [{ type: 'walk', x: rand(12, geo.rw - 12) }]; return next(p); }
+      if (r0 < 0.9) return setAct(p, 'idle', rand(1.2, 3));
+      return setAct(p, 'hop', 1.4);
+    }
+    function makePets() {
+      fx = [];
+      pets = heroes.slice(0, geo.floors === 2 ? 3 : 2).map((h, i) => ({ h, f: 0, x: 24 + i * 30, dir: 1, a: { type: 'idle', t: 0, dur: 1 }, q: [], joy: 0, ph: i * 0.37, climb: false }));
+      // 첫 장면: 한 마리는 밥, 한 마리는 침대에서 쿨쿨, 2층 집이면 한 마리가 계단으로
+      const placeAt = (p, it) => { it.busy = p; p.f = it.f; startUse(p, it); p.a.t = p.a.dur * 0.3; };
+      placeAt(pets[0], find('feeder'));
+      placeAt(pets[1], find('bed'));
+      if (pets[2]) { pets[2].x = 22; goUse(pets[2], find('sofa')); }
+    }
+
+    function update(p, dt) {
+      const a = p.a;
+      a.t += dt;
+      if (p.joy > 0) p.joy = Math.max(0, p.joy - dt);
+      const hx = geo.rx + p.x, hy = feetY(p) - 26;
+      switch (a.type) {
+        case 'walk': {
+          const dx = a.tx - p.x;
+          if (Math.abs(dx) <= SPEED * dt) { p.x = a.tx; next(p); return; }
+          p.dir = dx > 0 ? 1 : -1;
+          p.x += p.dir * SPEED * dt;
+          return;
+        }
+        case 'climb': {
+          const tx = a.up ? stairs.xb : stairs.xa, v = SPEED * 0.7 * dt, dx = tx - p.x;
+          p.dir = dx > 0 ? 1 : -1;
+          if (Math.abs(dx) <= v) { p.x = tx; p.climb = false; p.f = a.up ? 1 : 0; next(p); return; }
+          p.climb = true; p.f = 0;
+          p.x += p.dir * v;
+          return;
+        }
+        case 'use': {
+          const it = a.it, lift = LIFT[it.name] || 0;
+          if (it.name === 'bathtub' && a.t < a.dur - 0.6) {
+            a.b = (a.b || 0) + dt;
+            while (a.b > 0.25) { a.b -= 0.25; addFx('bubble', hx + rand(-12, 12), hy + rand(4, 14) - lift, { vy: -rand(8, 16), life: 1.1 }); }
+          }
+          if (it.name === 'bed' && Math.floor(a.t / 1.6) !== a.k) { a.k = Math.floor(a.t / 1.6); addFx('z', hx + p.dir * 8, hy + 6, { vx: 5, vy: -8, life: 2 }); }
+          if (!a.done && a.t > a.dur - 0.5) {
+            a.done = true;
+            if (it.name === 'feeder') addFx('heart', hx, hy - 2);
+            else if (it.name === 'sofa') addFx('note', hx + 8, hy - lift, { vx: 6 });
+            else if (it.name !== 'bed') for (let i = 0; i < 3; i++) addFx('sparkle', hx + rand(-10, 10), hy + rand(0, 16) - lift, { vy: -6, life: 0.8 });
+          }
+          if (a.t >= a.dur) { it.busy = null; next(p); }
+          return;
+        }
+        default:
+          if (a.t >= a.dur) next(p);
+      }
+    }
+
+    function look(p) {
+      const f = p.h.f, a = p.a;
+      const o = { fr: f.front, flip: p.dir < 0, hop: 0, squash: 1, spin: 0, wobble: 0, lift: 0 };
+      const blink = (t + p.ph * 5) % 3.7 < 0.14;
+      if (a.type === 'walk' || a.type === 'climb') o.fr = Math.floor(t * 5 + p.ph * 10) % 2 ? f.walk1 : f.walk0;
+      else if (a.type === 'hop') { o.fr = f.happy; o.hop = Math.abs(Math.sin(a.t * 5.5)) * 4; }
+      else if (a.type === 'use') {
+        o.lift = LIFT[a.it.name] || 0;
+        o.flip = false;
+        switch (a.it.name) {
+          case 'feeder': o.fr = a.done ? f.happy : Math.floor(a.t * 3.3) % 2 ? f.chew : f.chew2; break;
+          case 'toilet': o.fr = a.done ? f.happy : f.strain; if (!a.done) o.squash = 0.95 + Math.sin(a.t * 18) * 0.015; break;
+          case 'bathtub': o.fr = blink ? f.blink : f.happy; o.squash = 0.9; o.wobble = Math.sin(a.t * 6) * 0.05; break;
+          case 'bed': o.fr = f.sleep; o.spin = (p.dir > 0 ? 1 : -1) * Math.PI / 2 * Math.min(1, a.t / 0.5); o.squash = 1 + Math.sin(t * 2) * 0.02; break;
+          default: o.fr = blink ? f.blink : f.front;
+        }
+      } else if (blink) o.fr = f.blink;
+      if (p.joy > 0 && !p.climb && !o.spin) { o.fr = f.happy; o.hop += Math.abs(Math.sin(p.joy * 9)) * 3; }
+      return o;
+    }
+
+    // 집 (지붕, 벽, 벽지, 바닥, 가구)은 바뀔 때만 다시 그림
+    function renderBg() {
+      bg.width = cv.width; bg.height = cv.height;
+      const g = bg.getContext('2d');
+      g.imageSmoothingEnabled = false;
+      const R = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(Math.round(x * P), Math.round(y * P), Math.round(w * P), Math.round(h * P)); };
+      const z = Math.max(1, P / 2);
+      R(0, GROUND, AW, 1, '#2e2e2e');
+      // 지붕: 2픽셀씩 계단처럼 좁아짐
+      const roof = HS.roof.find((x) => x.id === st.roof).c;
+      const cx = geo.x0 + geo.hw / 2, rows = [];
+      for (let j = 0; ; j++) { const w = geo.hw + 8 - j * 12; if (w < 12) break; rows.push({ x: cx - w / 2, y: geo.bodyTop - 2 * (j + 1), w }); }
+      rows.forEach((rw) => R(rw.x - 1, rw.y - 1, rw.w + 2, 3, OUT));
+      rows.forEach((rw, j) => R(rw.x, rw.y, rw.w, 2, j === 0 ? roof[1] : roof[0]));
+      // 몸통 + 방
+      R(geo.x0, geo.bodyTop, geo.hw, GROUND - geo.bodyTop, OUT);
+      R(geo.x0 + 1, geo.bodyTop + 1, geo.hw - 2, GROUND - geo.bodyTop - 1, FIX.M);
+      for (const fl of geo.fl) {
+        paintWall(g, st.wall, geo.rx * P, fl.top * P, geo.rw * P, ROOM * P, z);
+        R(geo.rx, fl.y - 2, geo.rw, 2, st.wall === 'night' ? '#151c3a' : '#e8b796');
+        paintFloor(g, st.floor, geo.rx * P, fl.y * P, geo.rw * P, BAND * P, z);
+      }
+      // 2층 바닥: 계단이 올라오는 자리에 구멍
+      if (stairs && geo.floors === 2) R(geo.rx + stairs.left + stairs.w - 10, geo.fl[1].y, 9, BAND, 'rgba(40,24,16,0.85)');
+      for (const it of items) {
+        const fl = geo.fl[it.f];
+        const yb = it.wall ? fl.top + (it.name === 'window' ? 8 : 10) + it.h : fl.y;
+        drawProp(g, it.name, (geo.rx + it.x) * P, yb * P, P);
+      }
+    }
+
+    function draw() {
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, cv.width, cv.height);
+      ctx.imageSmoothingEnabled = false;
+      for (const s of stars) {
+        const k = 0.35 + 0.35 * Math.sin(t * 1.3 + s.ph);
+        ctx.fillStyle = `rgba(255,255,255,${k.toFixed(2)})`;
+        ctx.fillRect(s.x * P, s.y * P, P, P);
+      }
+      ctx.drawImage(bg, 0, 0);
+      for (const p of pets) {
+        const o = look(p);
+        drawPet(ctx, o.fr, p.h.pal, { x: (geo.rx + p.x) * P, y: (feetY(p) - o.lift) * P, P, flip: o.flip, hop: o.hop * P, squash: o.squash, spin: o.spin, wobble: o.wobble });
+        if (p.a.type === 'use' && p.a.it.name === 'bathtub') drawProp(ctx, 'bathtubFront', (geo.rx + p.a.it.x) * P, geo.fl[p.a.it.f].y * P, P);
+      }
+      for (const e of fx) {
+        const sc = e.kind === 'bubble' ? Math.max(1, Math.round(P * 0.75)) : P;
+        drawProp(ctx, e.kind, e.x * P, e.y * P, sc, { alpha: clamp((e.life - e.t) / 0.4, 0, 1) });
+      }
+    }
+
+    function layout() {
+      const r = window.devicePixelRatio || 1;
+      const box = cv.parentElement.clientWidth || 600;
+      P = Math.max(1, Math.floor(Math.min(box, 720) * r / AW));
+      cv.width = AW * P; cv.height = AH * P;
+      // 정수배로 맞추면 너무 작아지는 좁은 화면은 칸 너비까지 늘림
+      const css = AW * P / r < box * 0.8 ? Math.min(box, 720) : AW * P / r;
+      cv.style.width = css + 'px'; cv.style.height = css * AH / AW + 'px';
+      ctx = cv.getContext('2d');
+      renderBg();
+      draw();
+    }
+
+    // 꾸미기 견본 버튼
+    const thumbs = { wall: (g, id, s) => paintWall(g, id, 0, 0, s, s, s / 24), floor: (g, id, s) => paintFloor(g, id, 0, 0, s, s, s / 18) };
+    function thumb(kind, id) {
+      const r = dprInt(), s = 36 * r, c = document.createElement('canvas');
+      c.width = s; c.height = s;
+      const g = c.getContext('2d');
+      g.imageSmoothingEnabled = false;
+      if (thumbs[kind]) thumbs[kind](g, id, s);
+      else {
+        const rf = HS.roof.find((x) => x.id === id).c, fr = DATA.props.house;
+        const sc = Math.max(1, Math.floor(s / fr[0]));
+        g.drawImage(frameCanvas(fr, { R: rf[0], r: rf[1] }), Math.round((s - fr[0] * sc) / 2), Math.round((s - fr[1] * sc) / 2), fr[0] * sc, fr[1] * sc);
+      }
+      return c;
+    }
+    const OPTS = {
+      level: HS.level.map((name, i) => ({ id: String(i + 1), name })),
+      wall: HS.wall, floor: HS.floor, roof: HS.roof,
+    };
+    function syncControls() {
+      Object.keys(OPTS).forEach((k) => {
+        document.querySelectorAll(`.deco-opts[data-k="${k}"] button`).forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === String(st[k]))));
+        const cur = OPTS[k].find((o) => o.id === String(st[k]));
+        $('#deco-now-' + k).textContent = cur ? cur.name : '';
+      });
+    }
+    Object.keys(OPTS).forEach((k) => {
+      const box = $(`.deco-opts[data-k="${k}"]`);
+      OPTS[k].forEach((o) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.dataset.v = o.id;
+        if (k === 'level') { b.className = 'lvl'; b.innerHTML = `<small>Lv.${o.id}</small>${o.name}`; }
+        else { b.className = 'sw'; b.title = o.name; b.setAttribute('aria-label', o.name); b.appendChild(thumb(k, o.id)); }
+        b.addEventListener('click', () => {
+          st[k] = k === 'level' ? Number(o.id) : o.id;
+          if (k === 'level') { makeGeo(); makePets(); }
+          syncControls();
+          renderBg();
+          draw();
+        });
+        box.appendChild(b);
+      });
+    });
+
+    // 펫을 누르면 하트
+    cv.addEventListener('click', (e) => {
+      const rc = cv.getBoundingClientRect();
+      const ax = (e.clientX - rc.left) / rc.width * AW, ay = (e.clientY - rc.top) / rc.height * AH;
+      let best = null, bd = 16;
+      for (const p of pets) {
+        const d = Math.abs(geo.rx + p.x - ax), fy = feetY(p);
+        if (d < bd && ay > fy - 30 && ay < fy + 2) { bd = d; best = p; }
+      }
+      if (!best) return;
+      best.joy = 0.9;
+      addFx('heart', geo.rx + best.x, feetY(best) - 30);
+      if (reduced) draw();
+    });
+
+    makeGeo();
+    makePets();
+    syncControls();
+    layout();
+    let last = 0;
+    function loop(ts) {
+      const dt = last ? Math.min(0.1, (ts - last) / 1000) : 0;
+      last = ts;
+      if (visible) {
+        t += dt;
+        for (const p of pets) update(p, dt);
+        fx.forEach((e) => { e.t += dt; e.x += e.vx * dt; e.y += e.vy * dt; });
+        fx = fx.filter((e) => e.t < e.life);
+        draw();
+      }
+      requestAnimationFrame(loop);
+    }
+    if (!reduced) {
+      new IntersectionObserver((es) => { visible = es[0].isIntersecting; }).observe(cv);
+      requestAnimationFrame(loop);
+    }
+    return { layout };
+  })();
+
+  // 집 안 전용 가구
+  [['toilet', '화장실', '똥이랑 오줌을 여기서 봐요. 치울 필요가 없어요.'],
+    ['feeder', '자동 급식기', '배고프면 알아서 꺼내 먹어요. 채울 필요도 없어요.'],
+    ['bathtub', '욕조', '꼬질꼬질해지면 혼자 들어가서 씻어요.'],
+    ['medkit', '구급상자', '아프면 알아서 약을 꺼내 먹어요.'],
+    ['bed', '침대', '졸리면 올라가서 자요. 바닥보다 기력이 빨리 차요.']].forEach(([k, name, text]) => {
+    const li = document.createElement('li');
+    const stand = document.createElement('div');
+    stand.className = 'stand';
+    const fr = DATA.props[k], r = dprInt(), s = 3;
+    const cv = document.createElement('canvas');
+    cv.width = fr[0] * s * r; cv.height = fr[1] * s * r;
+    cv.style.width = fr[0] * s + 'px'; cv.style.height = fr[1] * s + 'px';
+    const g = cv.getContext('2d'); g.imageSmoothingEnabled = false;
+    g.drawImage(frameCanvas(fr, null), 0, 0, cv.width, cv.height);
+    cv.setAttribute('role', 'img');
+    cv.setAttribute('aria-label', name);
+    stand.appendChild(cv);
+    li.appendChild(stand);
+    li.insertAdjacentHTML('beforeend', `<h3>${name}</h3><p>${text}</p>`);
+    $('#autos').appendChild(li);
+  });
+
   // ───────── 몸짓 (마우스를 올리면 움직여요) ─────────
   const MOVES = [['hop', '깡총깡총'], ['spin', '빙글'], ['roll', '데굴데굴'], ['flop', '발라당'],
     ['stretch', '기지개'], ['bug', '나비 쫓기'], ['sneeze', '에취'], ['trip', '꽈당']];
@@ -716,7 +1129,7 @@
   window.addEventListener('resize', () => {
     clearTimeout(resizeT);
     resizeT = setTimeout(() => {
-      paradeA.layout(); paradeB.layout(); mark.layout(); monitor.layout(); layoutTiles();
+      paradeA.layout(); paradeB.layout(); mark.layout(); monitor.layout(); layoutTiles(); house.layout();
       gachaItems.concat(staticItems, moveItems).forEach(renderSpr); walker.resize();
     }, 120);
   });

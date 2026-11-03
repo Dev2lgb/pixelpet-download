@@ -20,6 +20,7 @@
   <nav class="top-nav" aria-label="바로가기">
     <a href="#friends">친구들</a>
     <a href="#care">돌보기</a>
+    <a href="#home">집</a>
     <a href="#install">설치</a>
   </nav>
 </header>
@@ -102,6 +103,39 @@
     <div class="tiles three" id="job-tiles"></div>
     <h3 class="sub-h">상점 모자</h3>
     <ul class="hats" id="hats"></ul>
+  </section>
+
+  <section class="sec" id="home">
+    <div class="sec-head">
+      <h2>집도 꾸며요</h2>
+      <p class="lead">번 돈으로 펫 하우스를 사면 바탕화면에 작은 집이 생겨요. 집을 누르면 집 안이 열리고, 펫을 끌어다 넣으면 그 안에서 지내요. 집 안에서도 밖이랑 똑같이 배고프고, 졸리고, 똥도 싸요.</p>
+    </div>
+    <div class="home-grid">
+      <figure class="home-scene"><canvas id="house" role="img" aria-label="2층 집 안에서 펫들이 밥을 먹고, 계단을 오르고, 침대에서 자는 모습"></canvas></figure>
+      <div class="deco" id="deco">
+        <p class="deco-hint">눌러서 직접 꾸며 보세요</p>
+        <div class="deco-row">
+          <p class="deco-k" id="deco-k-level">집 크기 <em id="deco-now-level"></em></p>
+          <div class="deco-opts lvls" role="group" aria-labelledby="deco-k-level" data-k="level"></div>
+        </div>
+        <div class="deco-row">
+          <p class="deco-k" id="deco-k-wall">벽지 <em id="deco-now-wall"></em></p>
+          <div class="deco-opts" role="group" aria-labelledby="deco-k-wall" data-k="wall"></div>
+        </div>
+        <div class="deco-row">
+          <p class="deco-k" id="deco-k-floor">바닥 <em id="deco-now-floor"></em></p>
+          <div class="deco-opts" role="group" aria-labelledby="deco-k-floor" data-k="floor"></div>
+        </div>
+        <div class="deco-row">
+          <p class="deco-k" id="deco-k-roof">지붕 <em id="deco-now-roof"></em></p>
+          <div class="deco-opts" role="group" aria-labelledby="deco-k-roof" data-k="roof"></div>
+        </div>
+        <p class="deco-foot">상점의 <b>집</b> 탭에서 바꿀 수 있어요. 2층 집에는 계단을 놓아 위아래를 오가요.</p>
+      </div>
+    </div>
+    <h3 class="sub-h">집 안 전용 가구는 펫이 알아서 써요</h3>
+    <ul class="autos" id="autos"></ul>
+    <p class="home-note">창문, 벽시계, 액자는 벽 아무 데나 걸어요. 필요한 가구가 다른 층에 있으면 계단을 타고 찾아가요. 집을 닫아 둬도 안에 있는 펫이 배고프거나 아프면 펫 하우스 위에 그림이 떠요.</p>
   </section>
 
   <section class="sec">
