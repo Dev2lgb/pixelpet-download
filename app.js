@@ -947,6 +947,16 @@
     return { resize };
   })();
 
+  // ───────── 윈도우 버전 (Microsoft Store 에 올라가 있는 패키지 버전) ─────────
+  // 스토어 목록 정보의 패키지 이름이 "아이디_1.4.0.0_x64__..." 모양이라 거기서 버전을 읽음. 못 읽으면 표시 안 함
+  fetch('https://displaycatalog.mp.microsoft.com/v7.0/products?bigIds=9P7TRJ3P1TRG&market=KR&languages=ko-KR')
+    .then((res) => (res.ok ? res.text() : Promise.reject(res.status)))
+    .then((txt) => {
+      const m = /"PackageFullName":"[^"_]+_(\d+)\.(\d+)\.(\d+)\.\d+_/.exec(txt);
+      if (m) $('#dl-win-ver').textContent = `v${m[1]}.${m[2]}.${m[3]}`;
+    })
+    .catch(() => {});
+
   // ───────── 맥 다운로드 링크 (GitHub 릴리스에서 자동으로. 윈도우는 index.html 의 Microsoft Store 링크) ─────────
   // dmg 가 있는 가장 최신 릴리스를 씀 (맥 파일이 아직 안 올라온 새 버전이면 이전 버전 맥 파일로)
   const mb = (n) => Math.round(n / 1024 / 1024) + 'MB';
