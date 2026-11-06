@@ -1360,13 +1360,23 @@
     return { resize };
   })();
 
-  // ───────── 윈도우 버전 (Microsoft Store 에 올라가 있는 패키지 버전) ─────────
-  // 스토어 목록 정보의 패키지 이름이 "아이디_1.4.0.0_x64__..." 모양이라 거기서 버전을 읽음. 못 읽으면 표시 안 함
+  // ───────── 윈도우 버전 ─────────
+  // 사이트를 올릴 때의 앱 버전(PETDATA.version)을 먼저 보여줌 (스토어 심사 중에도 새 버전 번호가 미리 보이게).
+  // 스토어에 그보다 새 버전이 올라가 있으면 그걸로: 스토어 목록 정보의 패키지 이름 "아이디_1.4.0.0_x64__..." 에서 읽음
+  const siteVer = window.PETDATA && window.PETDATA.version;
+  const newer = (a, b) => {
+    const x = String(a).split('.').map(Number), y = String(b).split('.').map(Number);
+    for (let i = 0; i < 3; i++) if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0);
+    return false;
+  };
+  if (siteVer) $('#dl-win-ver').textContent = 'v' + siteVer;
   fetch('https://displaycatalog.mp.microsoft.com/v7.0/products?bigIds=9P7TRJ3P1TRG&market=KR&languages=ko-KR')
     .then((res) => (res.ok ? res.text() : Promise.reject(res.status)))
     .then((txt) => {
       const m = /"PackageFullName":"[^"_]+_(\d+)\.(\d+)\.(\d+)\.\d+_/.exec(txt);
-      if (m) $('#dl-win-ver').textContent = `v${m[1]}.${m[2]}.${m[3]}`;
+      if (!m) return;
+      const store = `${m[1]}.${m[2]}.${m[3]}`;
+      if (!siteVer || newer(store, siteVer)) $('#dl-win-ver').textContent = 'v' + store;
     })
     .catch(() => {});
 
