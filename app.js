@@ -1009,14 +1009,15 @@
 
   // 집 안 전용 가구
   [['toilet', '화장실', '똥이랑 오줌을 여기서 봐요. 치울 필요가 없어요.'],
-    ['feeder', '자동 급식기', '배고프면 알아서 꺼내 먹어요. 채울 필요도 없어요.'],
+    ['feeder', '냉장고', '배고프면 문을 열고 알아서 꺼내 먹어요. 채울 필요도 없어요.'],
     ['bathtub', '욕조', '꼬질꼬질해지면 혼자 들어가서 씻어요.'],
     ['medkit', '구급상자', '아프면 알아서 약을 꺼내 먹어요.'],
     ['bed', '침대', '졸리면 올라가서 자요. 바닥보다 기력이 빨리 차요.']].forEach(([k, name, text]) => {
     const li = document.createElement('li');
     const stand = document.createElement('div');
     stand.className = 'stand';
-    const fr = DATA.props[k], r = dprInt(), s = 3;
+    // 냉장고처럼 키 큰 가구는 다른 가구 높이(약 20칸)에 맞춰 작게
+    const fr = DATA.props[k], r = dprInt(), s = fr[1] > 20 ? 2 : 3;
     const cv = document.createElement('canvas');
     cv.width = fr[0] * s * r; cv.height = fr[1] * s * r;
     cv.style.width = fr[0] * s + 'px'; cv.style.height = fr[1] * s + 'px';

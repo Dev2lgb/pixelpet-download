@@ -168,7 +168,7 @@ h2 { margin: 0; font-family: var(--pixel); font-weight: 700; font-size: 44px; li
 .deco-foot { margin: 0; padding-top: 14px; border-top: 1px solid var(--rule); font-size: 14px; color: var(--mute); }
 .autos { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 28px; }
 .autos li { display: flex; flex-direction: column; }
-.autos .stand { height: 60px; display: flex; align-items: flex-end; padding-bottom: 6px; border-bottom: 1px solid var(--rule); }
+.autos .stand { height: 76px; display: flex; align-items: flex-end; padding-bottom: 6px; border-bottom: 1px solid var(--rule); }
 .autos h3 { margin: 14px 0 0; font-family: var(--pixel); font-size: 16px; color: #fff; }
 .autos p { margin: 4px 0 0; font-size: 14px; line-height: 1.65; color: var(--mute); }
 .home-note { margin: 36px 0 0; max-width: 44em; color: var(--mute); }
