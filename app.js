@@ -618,90 +618,8 @@
   }
 
   // ───────── 펫 하우스: 집 안 단면 + 꾸미기 견본 ─────────
-  // 벽지·바닥 무늬는 앱과 같음 (g: 캔버스, z: 무늬 한 칸 크기)
-  const WALL_HEART = ['.X.X.', 'XXXXX', '.XXX.', '..X..'];
-  function paintWall(g, kind, x0, y0, w, h, z) {
-    const R = (x, y, ww, hh) => g.fillRect(Math.round(x0 + x * z), Math.round(y0 + y * z), Math.max(1, Math.round(ww * z)), Math.max(1, Math.round(hh * z)));
-    const cols = Math.ceil(w / z), rows = Math.ceil(h / z);
-    g.save();
-    g.beginPath(); g.rect(x0, y0, w, h); g.clip();
-    switch (kind) {
-      case 'dots':
-        g.fillStyle = '#dff1fb'; g.fillRect(x0, y0, w, h);
-        g.fillStyle = '#b9e0f6';
-        for (let y = 4, r = 0; y < rows; y += 12, r++) for (let x = (r % 2) * 8 + 4; x < cols; x += 16) R(x, y, 3, 3);
-        break;
-      case 'check':
-        g.fillStyle = '#e3f6ec'; g.fillRect(x0, y0, w, h);
-        g.fillStyle = '#cbecd9';
-        for (let y = 0, r = 0; y < rows; y += 10, r++) for (let x = (r % 2) * 10; x < cols; x += 20) R(x, y, 10, 10);
-        break;
-      case 'heart':
-        g.fillStyle = '#ffe6ee'; g.fillRect(x0, y0, w, h);
-        g.fillStyle = '#ffc2d4';
-        for (let y = 5, r = 0; y < rows; y += 16, r++) for (let x = (r % 2) * 12 + 4; x < cols; x += 24) WALL_HEART.forEach((row, dy) => { for (let dx = 0; dx < row.length; dx++) if (row[dx] === 'X') R(x + dx, y + dy, 1, 1); });
-        break;
-      case 'wood':
-        g.fillStyle = '#e9c49a'; g.fillRect(x0, y0, w, h);
-        g.fillStyle = '#d4a676';
-        for (let x = 0; x < cols; x += 14) R(x, 0, 1, rows);
-        for (let x = 6, r = 0; x < cols; x += 14, r++) for (let y = (r * 37) % 50 + 10; y < rows; y += 50) R(x, y, 2, 1);
-        break;
-      case 'night':
-        g.fillStyle = '#26305a'; g.fillRect(x0, y0, w, h);
-        for (let i = 0; i < cols * rows / 160; i++) {
-          const hx = (i * 977) % cols, hy = (i * 613 + (i >> 3) * 31) % rows;
-          g.fillStyle = i % 5 === 0 ? '#ffd23f' : '#c9d4ff';
-          R(hx, hy, 1, 1);
-        }
-        break;
-      default: // stripe
-        g.fillStyle = '#fde9d9'; g.fillRect(x0, y0, w, h);
-        g.fillStyle = '#f6d8c6';
-        for (let x = 0; x < cols; x += 16) R(x, 0, 6, rows);
-    }
-    g.restore();
-  }
-  function paintFloor(g, kind, x0, y0, w, h, z) {
-    const R = (x, y, ww, hh) => g.fillRect(Math.round(x0 + x * z), Math.round(y0 + y * z), Math.max(1, Math.round(ww * z)), Math.max(1, Math.round(hh * z)));
-    const cols = Math.ceil(w / z), rows = Math.ceil(h / z), half = rows / 2;
-    g.save();
-    g.beginPath(); g.rect(x0, y0, w, h); g.clip();
-    switch (kind) {
-      case 'tile':
-        g.fillStyle = '#f4f4f6'; g.fillRect(x0, y0, w, h);
-        g.fillStyle = '#c9d3df';
-        for (let y = 0, r = 0; y < rows; y += 6, r++) for (let x = (r % 2) * 6; x < cols; x += 12) R(x, y, 6, 6);
-        break;
-      case 'carpet':
-        g.fillStyle = '#f5a3c0'; g.fillRect(x0, y0, w, h);
-        g.fillStyle = '#fbc6d8';
-        for (let y = 1, r = 0; y < rows; y += 3, r++) for (let x = (r % 2) * 2; x < cols; x += 4) R(x, y, 1, 1);
-        break;
-      case 'grass':
-        g.fillStyle = '#7fc75a'; g.fillRect(x0, y0, w, h);
-        g.fillStyle = '#5fae43';
-        for (let x = 0; x < cols; x += 3) R(x, ((x * 7) % 3), 1, 2 + (x % 2));
-        g.fillStyle = '#9ad97a';
-        for (let x = 1; x < cols; x += 5) R(x, half + ((x * 3) % 2), 1, 1);
-        break;
-      case 'marble':
-        g.fillStyle = '#eceff3'; g.fillRect(x0, y0, w, h);
-        g.fillStyle = '#cfd6df';
-        for (let x = 0; x < cols; x += 22) { R(x, 0, 1, rows); for (let i = 0; i < 6; i++) R(x + 4 + i * 2, (i % 3) + 2, 2, 1); }
-        break;
-      default: // wood
-        g.fillStyle = '#c98a55'; g.fillRect(x0, y0, w, h);
-        g.fillStyle = '#b47344';
-        for (let x = 0, k = 0; x < cols; x += 24, k++) R(x + (k % 2) * 12, half, 2, half + 1);
-        for (let x = 12; x < cols; x += 24) R(x, 0, 2, half);
-        g.fillStyle = '#8a5530';
-        R(0, half, cols, 1);
-    }
-    g.fillStyle = 'rgba(0,0,0,0.22)';
-    g.fillRect(x0, y0, w, Math.max(1, Math.round(z)));
-    g.restore();
-  }
+  // 벽지·바닥 무늬: 앱과 같은 patterns.js (export-site-data.js 가 복사)
+  const { paintWall, paintFloor } = window.Patterns;
 
   const house = (function () {
     const cv = $('#house');
@@ -877,7 +795,7 @@
       R(geo.x0 + 1, geo.bodyTop + 1, geo.hw - 2, GROUND - geo.bodyTop - 1, FIX.M);
       for (const fl of geo.fl) {
         paintWall(g, st.wall, geo.rx * P, fl.top * P, geo.rw * P, ROOM * P, z);
-        R(geo.rx, fl.y - 2, geo.rw, 2, st.wall === 'night' ? '#151c3a' : '#e8b796');
+        R(geo.rx, fl.y - 2, geo.rw, 2, window.Patterns.trim(st.wall));
         paintFloor(g, st.floor, geo.rx * P, fl.y * P, geo.rw * P, BAND * P, z);
       }
       // 2층 바닥: 계단이 올라오는 자리에 구멍
