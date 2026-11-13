@@ -29,6 +29,7 @@
   const SAKURA = ['..P..', 'PPPPP', '.PYP.', '.P.P.'];
   const BUBBLE = ['.B.', 'B.B', '.B.'];
   const FISH = ['.FF..', 'FFFFF', '.FF..'];
+  const TWINKLE = ['.s.', 'sSs', '.s.'];
   const SCALLOP = ['..SSSS..', '.S....S.', 'S......S'];
 
   // 벽지: (g, R, cols, rows) 무늬 칸 단위로 그림
@@ -58,12 +59,15 @@
       for (let x = 0; x < cols; x += 14) R(x, 0, 1, rows);
       for (let x = 6, r = 0; x < cols; x += 14, r++) for (let y = (r * 37) % 50 + 10; y < rows; y += 50) R(x, y, 2, 1);
     },
+    // 별밤: 남색 바탕에 작은 별을 고르게 (1.4.8: 흩뿌린 하얀 점이 정신없다고 해서 대비를 낮추고 줄을 맞춤)
     night(g, R, cols, rows) {
-      fill(g, R, '#26305a', cols, rows);
-      for (let i = 0; i < cols * rows / 160; i++) {
-        const hx = (i * 977) % cols, hy = (i * 613 + (i >> 3) * 31) % rows;
-        g.fillStyle = i % 5 === 0 ? '#ffd23f' : '#c9d4ff';
-        R(hx, hy, 1, 1);
+      fill(g, R, '#2e3a66', cols, rows);
+      for (let y = 6, r = 0; y < rows; y += 16, r++) {
+        for (let x = (r % 2) * 12 + 6, i = 0; x < cols; x += 24, i++) {
+          // 네 개에 하나는 조금 밝은 노란 별, 나머지는 바탕에 가까운 푸른 별
+          const warm = (i + r * 3) % 4 === 0;
+          stamp(g, R, TWINKLE, warm ? { S: '#d9c98c', s: '#6f6f8c' } : { S: '#7f8cc0', s: '#45517f' }, x - 1, y - 1);
+        }
       }
     },
     // 연노랑 바탕에 분홍·보라 꽃
@@ -140,25 +144,22 @@
       g.fillStyle = '#e8c095';
       R(0, top - 3, cols, 1);
     },
-    // 바닷속: 물방울, 물고기, 아래 미역
+    // 바닷속: 위가 조금 밝은 물빛, 고르게 놓인 연한 물방울, 아래쪽에 낮은 미역 (1.4.8: 물고기·반짝이를 빼고 대비를 낮춤)
     sea(g, R, cols, rows) {
-      fill(g, R, '#1f5d8c', cols, rows);
-      g.fillStyle = '#2a6fa0';
-      R(0, 0, cols, Math.round(rows * 0.3));
-      g.fillStyle = '#25669a';
-      R(0, Math.round(rows * 0.3), cols, 2);
-      for (let cy = 0; cy * 14 < rows; cy++) {
-        for (let cx = 0; cx * 16 < cols; cx++) {
-          const h = hash(cx, cy), x = cx * 16 + Math.floor(h * 12), y = cy * 14 + Math.floor(hash(cy, cx) * 10);
-          if (h < 0.35) stamp(g, R, BUBBLE, { B: '#9fd8f5' }, x, y);
-          else if (h < 0.6) { g.fillStyle = '#7cc3ea'; R(x, y, 1, 1); }
-          else if (h > 0.93 && y < rows - 14) stamp(g, R, FISH, { F: h > 0.965 ? '#ff9f43' : '#ffd23f' }, x, y);
-        }
+      fill(g, R, '#3a79a8', cols, rows);
+      const top = Math.round(rows * 0.3);
+      g.fillStyle = '#4283b2';
+      R(0, 0, cols, top);
+      // 위쪽 물결 빛 (짧은 가로줄)
+      g.fillStyle = '#4b8dbb';
+      for (let y = 5, r = 0; y < top - 2; y += 9, r++) for (let x = (r % 2) * 10 + 2; x < cols; x += 20) R(x, y, 5, 1);
+      for (let y = top + 8, r = 0; y < rows - 14; y += 18, r++) {
+        for (let x = (r % 2) * 13 + 6, i = 0; x < cols; x += 26, i++) stamp(g, R, BUBBLE, { B: '#5d97c4' }, x, y);
       }
-      for (let x = 2, i = 0; x < cols; x += 7, i++) {
-        const hh = 4 + Math.floor(hash(i, 99) * 10);
-        if (hash(99, i) < 0.4) continue;
-        g.fillStyle = i % 2 ? '#3fa86a' : '#2f8f58';
+      // 미역: 드문드문 낮게, 바탕에 가까운 색
+      for (let x = 5, i = 0; x < cols; x += 23, i++) {
+        const hh = 4 + Math.floor(hash(i, 99) * 5);
+        g.fillStyle = i % 2 ? '#3a8a86' : '#357f7c';
         for (let k = 0; k < hh; k++) R(x + ((k >> 1) % 2), rows - 1 - k, 1, 1);
       }
     },
